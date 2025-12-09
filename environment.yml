@@ -1,0 +1,36 @@
+name: cu-cpbs-7602
+channels:
+  - defaults
+dependencies:
+  - tqdm=4
+  - pandas=2.2
+  - r-kableextra=1.4
+  - rpy2=3.6
+  - seaborn=0.13
+  - pandoc=3
+  - r-essentials
+  - scikit-learn=1.7.2
+  - pyyaml=6
+  - r-dplyr=1.1
+  - jupyterlab=4.2
+  - python=3.12
+  - r-ggplot2=4.0
+  - statsmodels=0.14
+  - r-tidyverse=2.0
+  - jupytext=1
+  - pre-commit=4.0
+  - r-base=4.4
+  - pip
+  - jupyter_contrib_nbextensions=0.7
+  - scipy=1.14
+  - r-irkernel
+  - ipython
+  - ipywidgets
+  - nodejs=22
+  - matplotlib=3.9
+  - openpyxl
+  - pyarrow
+  - polars
+  - hdbscan
+  - scanpy
+prefix: /Users/canderson/miniconda3/envs/cu-cpbs-7602
