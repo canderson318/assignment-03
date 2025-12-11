@@ -22,6 +22,7 @@ from pathlib import Path
 import os
 import pickle
 import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 import seaborn as sns
 
 # %%
@@ -52,54 +53,90 @@ NMF_df = (
 )
 
 
-# %%
-# --- PCA pairplot ---
-p1 = sns.PairGrid(PC_df, hue="tissue", corner=False, 
-              vars=PC_df.columns[:3], diag_sharey=False)
-p1.map_lower(sns.scatterplot)
-p1.map_diag(sns.histplot)
-p1.map_upper(sns.scatterplot)
-p1.add_legend()
-p1.figure.suptitle("PCA (first 3 components)", y=1.02)
-
-# --- PCA pairplot ---
-p2 = sns.PairGrid(NMF_df, hue="tissue", corner=False,
-               vars=NMF_df.columns[:3], diag_sharey=False)
-p2.map_lower(sns.scatterplot)
-p2.map_diag(sns.histplot)
-p2.map_upper(sns.scatterplot)
-p2.add_legend()
-p2.figure.suptitle("NMF (first 3 components)", y=1.02)
-
-
-plt.tight_layout()
-
+# %% [markdown]
+# ### plot tissues on dims
 
 # %%
-# find best component number
-dims = ['PCA','NMF']
-for dim in dims:
-    res = []
-    for i in range(1, 5):
-        gmm = GaussianMixture(n_components=i, random_state=0)
-        gmm.fit(dat_dict['rDims'][dim]['scores'])
-        BIC = gmm.bic(dat_dict['rDims'][dim]['scores'])
-        res.append({"i": i, "BIC": BIC})
+
+if False:
+    p1 = sns.PairGrid(PC_df, hue="tissue", corner=True, 
+                vars=PC_df.columns[:3])
+    p1.map_lower(sns.scatterplot)
+    p1.map_diag(sns.histplot)
+    p1.map_upper(sns.scatterplot)
+    p1.add_legend()
+    p1.figure.suptitle("PCA (first 3 components)", y=1.02)
+
+    # Save PCA figure
+    p1.figure.savefig("results/tissue-pca-pairs.png", dpi=300, bbox_inches="tight")
+    plt.close(p1.figure)   
+
+
+    p2 = sns.PairGrid(NMF_df, hue="tissue", corner=True,
+                vars=NMF_df.columns[:3])
+    p2.map_lower(sns.scatterplot)
+    p2.map_diag(sns.histplot)
+    p2.map_upper(sns.scatterplot)
+    p2.add_legend()
+    p2.figure.suptitle("NMF (first 3 components)", y=1.02)
+
+    p2.figure.savefig("results/tissue-nmf-pairs.png", dpi=300, bbox_inches="tight")
+    plt.close(p2.figure)  
+else:
+    p1 = mpimg.imread("results/tissue-pca-pairs.png")
+    p2 = mpimg.imread("results/tissue-nmf-pairs.png")
+
+    plt.figure(figsize=(8, 8))
+    plt.imshow(p1)
+    plt.axis("off")
+    plt.show()
+
+    plt.figure(figsize=(8, 8))
+    plt.imshow(p2)
+    plt.axis("off")
+    plt.show()
+
+print(f"{len(dat_dict['colData'].SMTS.unique())} unique tissues")
+
+# %% [markdown]
+# #### find best component number
+
+# %%
+
+if False:
+    for dim in ['PCA','NMF']:
+        res = []
+        for i in range(2, 32,2):
+            gmm = GaussianMixture(n_components=i, random_state=0)
+            gmm.fit(dat_dict['rDims'][dim]['scores'])
+            BIC = gmm.bic(dat_dict['rDims'][dim]['scores'])
+            res.append({"i": i, "BIC": BIC})
+            
+        res = pd.DataFrame(res)
+        res['BIC'] = res['BIC'] - res['BIC'].min()
         
-    res = pd.DataFrame(res)
-    res['BIC'] = res['BIC'] - res['BIC'].min()
-    
-    # res['BIC'] = res['BIC'] / res['BIC'].sum()
-    
-    plt.scatter(res.iloc[:,0], res.iloc[:,1], label = dim)
-    # connect points with a line
-    plt.plot(res['i'], res['BIC'])
+        plt.scatter(res['i'], res['BIC'], label = dim)
+        # connect points with a line
+        plt.plot(res['i'], res['BIC'])
 
-plt.legend(title="dims")
-plt.xlabel("Number of mixture components")
-plt.ylabel("Normalized BIC")
-plt.title("Model selection via BIC")
-plt.show()
+    plt.legend(title="dims")
+    plt.xlabel("Number of mixture components")
+    plt.ylabel("Normalized BIC")
+    plt.title("Model selection via BIC")
+
+    # SAVE 
+    plt.savefig("results/dims-gmm-bics.png", dpi=300, bbox_inches="tight")
+
+    plt.show()
+    plt.close() 
+
+else:
+    p = mpimg.imread("results/dims-gmm-bics.png")
+    plt.figure(figsize=(8, 8))
+    plt.imshow(p)
+    plt.axis("off")
+    plt.show()
+    
 
 
 # %% [markdown]
@@ -113,8 +150,8 @@ plt.show()
 
 # make model object
 np.random.seed(1293)
-NMF_gmm= GaussianMixture(n_components= 2,random_state=0) 
-PCA_gmm= GaussianMixture(n_components= 2,random_state=0) 
+NMF_gmm= GaussianMixture(n_components= 10,random_state=0) 
+PCA_gmm= GaussianMixture(n_components= 10,random_state=0) 
 
 # fit model
 NMF_gmm.fit(dat_dict['rDims']['NMF']['scores'])
@@ -137,8 +174,11 @@ pca = pd.DataFrame(
 plot_df = pd.concat([nmf, pca], axis=1).assign(
     nmf_cluster=NMF_clusters,
     pca_cluster=PCA_clusters,
-    tissue = (dat_dict['colData'].SMTS.values=="Brain").astype(int)
+    tissue = dat_dict['colData'].SMTS.values
 )
+
+plot_df["nmf_cluster"] = plot_df["nmf_cluster"].astype("category")
+plot_df["pca_cluster"] = plot_df["pca_cluster"].astype("category")
 
 
 plt.figure(figsize=(6,5))
@@ -146,7 +186,6 @@ sns.scatterplot(
     data=plot_df,
     x="NMF1", y="NMF2",
     hue="nmf_cluster",
-    # palette={0: "red", 1: "blue"},
     s=10
 )
 plt.show()
@@ -156,7 +195,6 @@ sns.scatterplot(
     data=plot_df,
     x="NMF1", y="NMF2",
     hue="tissue",
-    # palette={0: "red", 1: "blue"},
     s=10
 )
 plt.show()
@@ -166,7 +204,7 @@ sns.scatterplot(
     data=plot_df,
     x="PCA1", y="PCA2",
     hue="pca_cluster",
-    # palette={0: "red", 1: "blue"},
+    # palette= palette    
     s=10
 )
 plt.show()
@@ -177,7 +215,6 @@ sns.scatterplot(
     data=plot_df,
     x="PCA1", y="PCA2",
     hue="tissue",
-    # palette={0: "red", 1: "blue"},
     s=10
 )
 plt.show()
@@ -185,14 +222,36 @@ plt.show()
 
 
 # %%
-from sklearn.metrics import classification_report
+tab = pd.crosstab(dat_dict['colData'].SMTS, NMF_clusters)
+tab = tab /tab.sum()
 
-y_true = (dat_dict['colData']['SMTS'].values == "Brain").astype(int)
+plt.figure(figsize=(4,4))
+sns.clustermap(tab, annot=False, cmap="Blues", row_cluster=False)
+plt.title("Tissue × NMF cluster")
+plt.xlabel("Cluster")
+plt.ylabel("Tissue")
+plt.show()
 
-print("\\\\ NMF GMM classification Report \\\\\n",classification_report(y_true, NMF_clusters, zero_division=0))
-print("\\\\ PCA GMM classification Report \\\\\n",classification_report(y_true, PCA_clusters, zero_division=0))
+tab = pd.crosstab(dat_dict['colData'].SMTS, PCA_clusters)
+tab = tab /tab.sum()
+
+plt.figure(figsize=(4,4))
+sns.clustermap(tab, annot=False, cmap="Blues",row_cluster=False)
+plt.title("Tissue × PCA cluster")
+plt.xlabel("Cluster")
+plt.ylabel("Tissue")
+plt.show()
+
+
+# %%
+# from sklearn.metrics import classification_report
+
+# y_true = dat_dict['colData']['SMTS'].values
+
+# print("\\\\ NMF GMM classification Report \\\\\n",classification_report(y_true, NMF_clusters, zero_division=0))
+# print("\\\\ PCA GMM classification Report \\\\\n",classification_report(y_true, PCA_clusters, zero_division=0))
 
 # %% [markdown]
-# Classification on NMF performs pefectly
+# Classification on PCA works better because clusters have more unique tissues
 
 # %%

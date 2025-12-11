@@ -23,6 +23,8 @@ import pickle
 import pandas as pd
 from pathlib import Path
 
+
+
 # %% [markdown]
 # ### Set up
 
@@ -39,9 +41,6 @@ filepath = Path.home() / "wdpath.txt"
 
 filepath.write_text(working_dir.strip() + "\n")
 
-
-# %% [markdown]
-#
 
 # %% [markdown]
 # #### Set working directory 

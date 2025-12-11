@@ -108,11 +108,16 @@ def filter_se(
         raise ValueError("margin must be 0 (rows/genes) or 1 (columns/samples)")
 
 # %% [markdown]
-# ### Select top brain and blood tissues
+# ### Select top tissues
 
 # %%
-# tiss_inds = dat_dict["colData"]['SMTS'].isin(["Brain", "Blood"]).values
-# dat_dict = filter_se(dat_dict, 1, tiss_inds)
+top_tiss = pd.DataFrame(dat_dict["colData"]['SMTS'].value_counts()).sort_values(by = "count", ascending = False).head(10).index
+print(top_tiss)
+
+# %%
+
+tiss_inds = dat_dict["colData"]['SMTS'].isin(top_tiss).values
+dat_dict = filter_se(dat_dict, 1, tiss_inds)
 
 # %%
 print(dat_dict['colData'].shape)

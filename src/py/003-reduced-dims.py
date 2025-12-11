@@ -95,31 +95,39 @@ X_non_negative.shape
 # %%
 from sklearn.decomposition import NMF
 
-nmf = NMF(n_components=50, max_iter=1000)
+nmf_path = Path("processed-data/nmf-redux.pkl")
+if not nmf_path.exists():
+    np.random.seed(1293)
+    nmf = NMF(n_components=50, max_iter=1000)
+    nmf.fit(X_non_negative)
+    X_nmf_reduced = nmf.transform(X_non_negative)
+    with open(nmf_path, "wb") as f:
+        pickle.dump([X_nmf_reduced,nmf], f)
+else:
+    with open(nmf_path, "rb") as f:
+        X_nmf_reduced , nmf = pickle.load(f)
 
-np.random.seed(1293)
-nmf.fit(X_non_negative)
-X_nmf_reduced = nmf.transform(X_non_negative)
-#^^ 30s
 
 # %%
 nmf.components_
 
 # %%
 plot_d = (
-    pd.DataFrame(X_nmf_reduced[:, :5])
+    pd.DataFrame(X_nmf_reduced[:, :3])
     .assign(tissue = dat_dict['colData'].SMTS.values)
 )
 
 plot_d.head
 
 # %%
-
 sns.pairplot(
     plot_d,
     hue='tissue',
-    palette="deep"
+    palette="deep",
+    # diag_kind="hist",
+    # corner = True
 )
+plt.show()
 
 # %%
 
@@ -138,5 +146,7 @@ print("Done")
 # %%
 print(dat_dict['rDims']['NMF']['scores'].shape)
 print(dat_dict['rDims']['PCA']['scores'].shape)
+
+# %%
 
 # %%
