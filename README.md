@@ -1,8 +1,9 @@
 # Assignment 3
 
-[Analyisis Report](REPORT.md)
+*__Find the Analyisis Report [here](REPORT.pdf).__*
 
-This assignment ...  
+In this assignment I first explored two different dimension reduction techniques on the gtex data and got a feel for their strengths by evaluating tissue prediction with them. I also tried several ensemble methods for predicting tissue and age. 
+
 Look at [assignment-description.md](assignment-description.md) for more detail.
 
 ## Set up 
@@ -21,7 +22,23 @@ Run these [scripts](src/py/) in numerical order to reproduce results.
 - Log normalize and standardize to mean 0 and sd of 1. 
 
 #### `003-reduced-dims`
-- Calculate 50 principal components on gene counts matrix.
+- Calculate 50 principal components from the gene counts matrix.
+- Calculate 50 non-negative matrix factorization components from the gene counts matrix.
+
+#### `004-clustering`
+- Use Gaussian Mixture Modeling to predict tissue from NMF and PCA components. 
+- Evaluate prediction accuracy using confusion matrices
+
+#### `005-ensemble-modeling`
+- Train two ensemble models to predict __tissue__ from PCA components
+    - An overfitting Random Forest classifier
+    - An underfitting AdaBoost classifier
+    - Evaluate with accuracies
+- Train two ensemble models to predict __age__ from PCA components
+    - Random Forest regressor
+    - Gradient Boosting regressor
+    - (Ridge regressor as benchmark)
+    - Evaluate with RMSE
 
 ## AI use
 I used Chat-GPT code generation to help me learn python by translating R functions into python. All of the analysis ideas were mine and my prompts were for syntax, etc., only. 
